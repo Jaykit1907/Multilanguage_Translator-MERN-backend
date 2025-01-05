@@ -110,7 +110,8 @@ app.post("/logindata", async (req, res) => {
       const token = jwt.sign({ id: userExist._id, email: email, password: password }, secretkey, { expiresIn: "2h" });
       res.cookie("token", token, {
         httpOnly: true,
-        maxAge: 2 * 60 * 60 * 1000, // 2 hours expiration
+        maxAge: 2 * 60 * 60 * 1000,  // 2 hours expiration
+        secure: true,  // Ensure this is set when using HTTPS
       });
       
 
