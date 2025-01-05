@@ -108,11 +108,16 @@ app.post("/logindata", async (req, res) => {
     if (password_cmp) {
       console.log('password matched..');
       const token = jwt.sign({ id: userExist._id, email: email, password: password }, secretkey, { expiresIn: "2h" });
-      res.cookie("token", token, {
-        httpOnly: true,
-        maxAge: 2 * 60 * 60 * 1000,  // 2 hours expiration
-        secure: false,  // Ensure this is set when using HTTPS
-      });
+     
+
+      const expirationDate = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
+res.cookie("token", token, {
+  httpOnly: true,  // Ensure cookie is only accessible through HTTP requests
+  expires: expirationDate,  // Set an explicit expiration date
+  secure: false,  // Set to true when using HTTPS in production
+  path: '/'  // Ensure the cookie is available site-wide
+});
+
       
 
       return res.json({
