@@ -13,7 +13,7 @@ const authenticate=require("./Mongo/Authentication.js");
 
 const corsOptions = {
   origin:"https://multilanguage-translator-mern-client.vercel.app",
-  // origin:"http://localhost:3000",
+  //origin:"http://localhost:3000",
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
 };
