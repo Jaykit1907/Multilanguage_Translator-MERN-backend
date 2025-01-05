@@ -12,7 +12,7 @@ const authenticate=require("./Mongo/Authentication.js");
 // const gTTS = require("gtts");
 
 const corsOptions = {
-  "https://multilanguage-translator-mern-client.vercel.app",
+  origin:"https://multilanguage-translator-mern-client.vercel.app",
   // origin:"http://localhost:3000",
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
