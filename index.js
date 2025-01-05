@@ -109,9 +109,7 @@ app.post("/logindata", async (req, res) => {
       console.log('password matched..');
       const token = jwt.sign({ id: userExist._id, email: email, password: password }, secretkey, { expiresIn: "2h" });
 
-    res.cookie("token", token,{
-      maxAge: 2 * 60 * 60 * 1000 // 2 hours
-    });
+    res.cookie("token", token);
 
 
       return res.json({
