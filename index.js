@@ -108,9 +108,11 @@ app.post("/logindata", async (req, res) => {
     if (password_cmp) {
       console.log('password matched..');
       const token = jwt.sign({ id: userExist._id, email: email, password: password }, secretkey, { expiresIn: "2h" });
-
-    res.cookie("token", token);
-
+      res.cookie("token", token, {
+        httpOnly: true,
+        maxAge: 2 * 60 * 60 * 1000, // 2 hours expiration
+      });
+      
 
       return res.json({
         msg1: "succesfully login.."
