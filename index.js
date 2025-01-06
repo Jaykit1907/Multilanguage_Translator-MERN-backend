@@ -111,7 +111,7 @@ app.post("/logindata", async (req, res) => {
      
 
       const expirationDate = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
-      res.cookie('cookieName', 'cookieValue', {
+      res.cookie('token', token, {
         maxAge: 2 * 60 * 60 * 1000, // 2 hour in milliseconds
         httpOnly: true, // Ensures the cookie is accessible only by the server
         secure: true,   // Ensures the cookie is sent over HTTPS
