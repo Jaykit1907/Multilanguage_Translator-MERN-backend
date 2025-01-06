@@ -12,8 +12,8 @@ const authenticate=require("./Mongo/Authentication.js");
 // const gTTS = require("gtts");
 
 const corsOptions = {
-  //origin:"https://multilanguage-translator-mern-client.vercel.app",
-  origin:"http://localhost:3000",
+  origin:"https://multilanguage-translator-mern-client.vercel.app",
+  //origin:"http://localhost:3000",
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
 };
@@ -36,6 +36,21 @@ app.get("/home",authenticate, (req, res) => {
   
 
   console.log("this is home page");
+
+ 
+
+  res.json({
+    show:true,
+    msg3:"it's me jaykit"
+  });
+
+})
+
+
+app.get("/image",authenticate, (req, res) => {
+  
+
+  console.log("this is image page");
 
  
 
