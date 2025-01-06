@@ -204,7 +204,12 @@ app.post('/translate', async (req, res) => {
 
 app.get("/logout",(req,res)=>{
 
-  res.clearCookie("token", { path: "/", httpOnly: true, secure: false });
+  res.clearCookie("token", {
+    path: "/",
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+});
 
   console.log("running logout");
   
