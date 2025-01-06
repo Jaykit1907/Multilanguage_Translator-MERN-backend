@@ -115,7 +115,7 @@ app.post("/logindata", async (req, res) => {
         maxAge: 2 * 60 * 60 * 1000, // 2 hour in milliseconds
         httpOnly: true, // Ensures the cookie is accessible only by the server
         secure: true,   // Ensures the cookie is sent over HTTPS
-        sameSite: 'strict', // Adjust based on your cross-site requirements
+        sameSite: 'none', // Adjust based on your cross-site requirements
     });
       
 
