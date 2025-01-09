@@ -6,10 +6,27 @@ const verify=(req,res,next)=>{
     if(token){
         const verifytoken=jwt.verify(token,secretkey);
         if(verifytoken){
+            console.log("this is token");
+
+
+            console.log(verifytoken);
+
+            req.user=verifytoken.user;
+            
            
             next();
             
         }
+    }
+    else{
+        console.log("token not found11");
+        return res.json({
+            authenticated:false,
+            msg:"please login first"
+        })
+        
+        
+        
     }
 
 

@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const player = require('play-sound')();
+const router = express.Router();
 
 
 const authenticate=require("./Mongo/Authentication.js");
@@ -12,8 +13,8 @@ const authenticate=require("./Mongo/Authentication.js");
 // const gTTS = require("gtts");
 
 const corsOptions = {
-  origin:"https://multilanguage-translator-mern-client.vercel.app",
-  //origin:"http://localhost:3000",
+  //origin:"https://multilanguage-translator-mern-client.vercel.app",
+  origin:"http://localhost:3000",
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
 };
@@ -32,19 +33,27 @@ app.get("/", (req, res) => {
 });
 
 
-app.get("/home",authenticate, (req, res) => {
+app.get("/translatebtn",authenticate, (req, res) => {
   
 
   console.log("this is home page");
 
- 
-
   res.json({
     show:true,
-    msg3:"it's me jaykit"
+    authenticated:true
   });
 
 })
+
+app.get("/protected",authenticate, (req, res) => {
+  console.log("hi how ...");
+  console.log(req.name);
+  res.status(200).json({
+      authenticated:true,
+      message: "You have access to this protected route.",
+      user: req.user // The decoded token can be passed if needed
+  });
+});
 
 
 app.get("/image",authenticate, (req, res) => {
@@ -120,9 +129,10 @@ app.post("/logindata", async (req, res) => {
   if (userExist) {
 
     const password_cmp = await bcrypt.compare(password, userExist.password);
+    console.log(userExist.name);
     if (password_cmp) {
       console.log('password matched..');
-      const token = jwt.sign({ id: userExist._id, email: email, password: password }, secretkey, { expiresIn: "2h" });
+      const token = jwt.sign({ id: userExist._id, email: email, password: password,user:userExist.name }, secretkey, { expiresIn: "2h" });
      
 
       const expirationDate = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
@@ -217,22 +227,14 @@ app.post('/translate', async (req, res) => {
 });
 
 
-app.get("/logout",(req,res)=>{
+app.get("/logout", (req, res) => {
+  // Clear the token cookie (if you're using cookies)
+  res.clearCookie("token");
+  console.log('this is logut');
 
-  res.clearCookie("token", {
-    path: "/",
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+  // Respond with a success message
+  res.status(200).json({ message: "Logged out successfully" });
 });
-
-  console.log("running logout");
-  
-
-  res.json({
-    msg:"succesfully logout"
-  })
-})
 
 
 app.listen(5000, () => {
