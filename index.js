@@ -14,8 +14,8 @@ const authenticate=require("./Mongo/Authentication.js");
 // const gTTS = require("gtts");
 
 const corsOptions = {
-  origin:"https://multilanguage-translator-mern-client.vercel.app",
-//  origin:"http://localhost:3000",
+  //origin:"https://multilanguage-translator-mern-client.vercel.app",
+ origin:"http://localhost:3000",
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
 };
@@ -49,8 +49,10 @@ app.get("/translatebtn",authenticate, (req, res) => {
 app.get("/protected",authenticate, (req, res) => {
   console.log("hi how ...");
   console.log(req.name);
+  console.log(req.email);
   res.status(200).json({
       authenticated:true,
+      email:req.email,
       message: "You have access to this protected route.",
       user: req.user // The decoded token can be passed if needed
   });
@@ -145,11 +147,10 @@ app.post("/logindata", async (req, res) => {
     });
 
     res.cookie('email', email, {
-      maxAge: 2 * 60 * 60 * 1000, // 2 hour in milliseconds
-      httpOnly: true, // Ensures the cookie is accessible only by the server
-      secure: true,   // Ensures the cookie is sent over HTTPS
-      sameSite: 'none', // Adjust based on your cross-site requirements
+      maxAge: 2 * 60 * 60 * 1000, // 2 hours
+    
   });
+  
       return res.json({
         msg1: "succesfully login.."
       })
@@ -178,31 +179,82 @@ app.post("/logindata", async (req, res) => {
 
 
 
+// app.post('/translate', async (req, res) => {
+//   const { text, language1,language2,email} = req.body;
+//   console.log("l1.......");
+
+//   try {
+//     // Dynamically import the 'translate' module
+//     const translate = (await import('translate')).default;  // Using dynamic import for ES module
+
+//     const translated = await translate(text, {from:language1,to: language2 });
+//     console.log("l2....");
+//     const historyEntry = new History({ email:email,
+//                                        searchText:text,
+//                                        translatedText:translated
+
+//     });
+//     try{
+//     const historysaved=await historyEntry.save();
+//     console.log("history saved",historysaved);
+//     }
+//     catch(e){
+//       console.log("error",e);
+//     }
+
+//     res.json({ translatedText: translated });
+//   } catch (error) {
+//     console.error('Error translating text:', error);
+//     res.status(500).json({ error: 'Translation failed' });
+//   }
+// });
+
 app.post('/translate', async (req, res) => {
-  const { text, language1,language2,email} = req.body;
-  console.log("l1.......");
+  const { text, language1, language2, email } = req.body;
+
+  // Check if all required parameters are provided
+  if (!text || !language1 || !language2 || !email) {
+    return res.status(400).json({ error: 'Missing required parameters' });
+  }
+
+  console.log("Starting translation...");
 
   try {
     // Dynamically import the 'translate' module
-    const translate = (await import('translate')).default;  // Using dynamic import for ES module
+    const translate = (await import('translate')).default; // Using dynamic import for ES module
 
-    const translated = await translate(text, {from:language1,to: language2 });
-    console.log("l2....");
-    const historyEntry = new History({ email:email,
-                                       searchText:text,
-                                       translatedText:translated
+    const translated = await translate(text, { from: language1, to: language2 });
+    console.log("Translation completed");
 
+    // Save translation history to the database
+    const historyEntry = new History({
+      email: email,
+      searchText: text,
+      translatedText: translated
     });
-    const historysaved=await historyEntry.save();
-    console.log("history saved",historysaved);
 
-    res.json({ translatedText: translated });
+    try {
+      const historySaved = await historyEntry.save();
+      console.log("History saved:", historySaved);
+    } catch (e) {
+      console.error("Error saving history:", e);
+      return res.status(500).json({ error: 'Failed to save translation history' });
+    }
+
+    // Respond with the translated text and additional info
+    res.json({
+      message: 'Translation successful',
+      originalText: text,
+      translatedText: translated,
+      fromLanguage: language1,
+      toLanguage: language2
+    });
+
   } catch (error) {
-    console.error('Error translating text:', error);
+    console.error('Error during translation:', error);
     res.status(500).json({ error: 'Translation failed' });
   }
 });
-
 
 app.get("/logout", (req, res) => {
   // Clear the token cookie (if you're using cookies)

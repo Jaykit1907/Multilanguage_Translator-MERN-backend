@@ -12,6 +12,7 @@ const verify=(req,res,next)=>{
             console.log(verifytoken);
 
             req.user=verifytoken.user;
+            req.email=verifytoken.email;
             
            
             next();
