@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const player = require('play-sound')();
 const router = express.Router();
+const History =require("./Mongo/HistoryModel.js");
 
 
 const authenticate=require("./Mongo/Authentication.js");
@@ -142,6 +143,8 @@ app.post("/logindata", async (req, res) => {
         secure: true,   // Ensures the cookie is sent over HTTPS
         sameSite: 'none', // Adjust based on your cross-site requirements
     });
+
+    res.cookie("email",email);
       
 
       return res.json({
@@ -173,7 +176,7 @@ app.post("/logindata", async (req, res) => {
 
 
 app.post('/translate', async (req, res) => {
-  const { text, language1,language2 } = req.body;
+  const { text, language1,language2,email} = req.body;
   console.log("l1.......");
 
   try {
@@ -182,42 +185,13 @@ app.post('/translate', async (req, res) => {
 
     const translated = await translate(text, {from:language1,to: language2 });
     console.log("l2....");
-  //   (async () => {
-  //     try {
-  //         // Dynamically import 'franc'
-  //         const { franc } = await import('franc'); // Accessing 'franc' function from the module
-  
-  //         const text1 = translated; // Example text
-  //         const langCode = franc(text1); // Detect the language
-  
-  //         console.log(`Detected Language Code: ${langCode}`);
-  //     } catch (error) {
-  //         console.error("Error importing or using franc:", error);
-  //     }
-  // })();
-  
+    const historyEntry = new History({ email:email,
+                                       searchText:text,
+                                       translatedText:translated
 
-    
-
-// console.log(language2);
-// const gtts = new gTTS(translated, language2);
-
-// gtts.save("output.mp3", (err, result) => {
-//             if (err) {
-//               console.error("Error:", err);
-//             } else {
-//               console.log("Audio file saved as output.mp3");
-//             }
-//           });
-
-
-
-
-
-// player.play('/output.mp3', function (err) {
-//   if (err) console.error(`Error playing file: ${err}`);
-//   else console.log('Audio finished playing');
-// });
+    });
+    const historysaved=await historyEntry.save();
+    console.log("history saved",historysaved);
 
     res.json({ translatedText: translated });
   } catch (error) {
@@ -230,11 +204,29 @@ app.post('/translate', async (req, res) => {
 app.get("/logout", (req, res) => {
   // Clear the token cookie (if you're using cookies)
   res.clearCookie("token");
+  res.clearCookie("email");
   console.log('this is logut');
 
   // Respond with a success message
   res.status(200).json({ message: "Logged out successfully" });
 });
+
+
+
+
+app.get("/gethistory/:email", async (req, res) => {
+  try {
+      const { email } = req.params;
+      const history = await History.find({ email }).sort({ timestamp: -1 });
+      res.status(200).json(history);
+  } catch (error) {
+      res.status(500).json({ error: "Failed to fetch history" });
+  }
+});
+
+
+
+
 
 
 app.listen(5000, () => {
