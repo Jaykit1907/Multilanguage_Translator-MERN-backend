@@ -14,8 +14,8 @@ const authenticate=require("./Mongo/Authentication.js");
 // const gTTS = require("gtts");
 
 const corsOptions = {
-  origin:"https://multilanguage-translator-mern-client.vercel.app",
-  //origin:"http://localhost:3000",
+  //origin:"https://multilanguage-translator-mern-client.vercel.app",
+  origin:"http://localhost:3000",
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
 };
@@ -144,9 +144,12 @@ app.post("/logindata", async (req, res) => {
         sameSite: 'none', // Adjust based on your cross-site requirements
     });
 
-    res.cookie("email",email);
-      
-
+    res.cookie('email', email, {
+      maxAge: 2 * 60 * 60 * 1000, // 2 hour in milliseconds
+      httpOnly: true, // Ensures the cookie is accessible only by the server
+      secure: true,   // Ensures the cookie is sent over HTTPS
+      sameSite: 'none', // Adjust based on your cross-site requirements
+  });
       return res.json({
         msg1: "succesfully login.."
       })
