@@ -179,36 +179,6 @@ app.post("/logindata", async (req, res) => {
 
 
 
-// app.post('/translate', async (req, res) => {
-//   const { text, language1,language2,email} = req.body;
-//   console.log("l1.......");
-
-//   try {
-//     // Dynamically import the 'translate' module
-//     const translate = (await import('translate')).default;  // Using dynamic import for ES module
-
-//     const translated = await translate(text, {from:language1,to: language2 });
-//     console.log("l2....");
-//     const historyEntry = new History({ email:email,
-//                                        searchText:text,
-//                                        translatedText:translated
-
-//     });
-//     try{
-//     const historysaved=await historyEntry.save();
-//     console.log("history saved",historysaved);
-//     }
-//     catch(e){
-//       console.log("error",e);
-//     }
-
-//     res.json({ translatedText: translated });
-//   } catch (error) {
-//     console.error('Error translating text:', error);
-//     res.status(500).json({ error: 'Translation failed' });
-//   }
-// });
-
 app.post('/translate', async (req, res) => {
   const { text, language1, language2, email } = req.body;
 
