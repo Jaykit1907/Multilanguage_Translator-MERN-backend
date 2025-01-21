@@ -182,6 +182,8 @@ app.post("/logindata", async (req, res) => {
 app.post('/translate', async (req, res) => {
   const { text, language1, language2, email } = req.body;
 
+  console.log("this is",req.body);
+
   // Check if all required parameters are provided
   if (!text || !language1 || !language2 || !email) {
     return res.status(400).json({ error: 'Missing required parameters' });
@@ -205,7 +207,7 @@ app.post('/translate', async (req, res) => {
 
     try {
       const historySaved = await historyEntry.save();
-      console.log("History saved:", historySaved);
+     // console.log("History saved:", historySaved);
     } catch (e) {
       console.error("Error saving history:", e);
       return res.status(500).json({ error: 'Failed to save translation history' });
