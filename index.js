@@ -245,6 +245,7 @@ app.get("/gethistory/:email", async (req, res) => {
   try {
       const { email } = req.params;
       const history = await History.find({ email }).sort({ timestamp: -1 });
+      console.log(history);
       res.status(200).json(history);
   } catch (error) {
       res.status(500).json({ error: "Failed to fetch history" });
@@ -253,6 +254,31 @@ app.get("/gethistory/:email", async (req, res) => {
 
 
 
+
+app.delete('/history/deleteMany', async (req, res) => {
+  const { date } = req.body; // Get the date from the request body
+  console.log("clicked.....");
+
+  try {
+    // Convert the date to a range for the entire day
+    const startDate = new Date(date);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 1);
+
+    // Delete documents matching the date range
+    const result = await History.deleteMany({
+      timestamp: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    });
+
+    res.json({ message: 'Documents deleted', deletedCount: result.deletedCount });
+  } catch (error) {
+    console.error('Error deleting documents:', error);
+    res.status(500).json({ error: 'An error occurred while deleting documents' });
+  }
+});
 
 
 
