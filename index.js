@@ -14,8 +14,8 @@ const authenticate=require("./Mongo/Authentication.js");
 // const gTTS = require("gtts");
 
 const corsOptions = {
- origin:"https://multilanguage-translator-mern-client.vercel.app",
- //origin:"http://localhost:3000",
+ //origin:"https://multilanguage-translator-mern-client.vercel.app",
+ origin:"http://localhost:3000",
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
 };
@@ -245,7 +245,7 @@ app.get("/gethistory/:email", async (req, res) => {
   try {
       const { email } = req.params;
       const history = await History.find({ email }).sort({ timestamp: -1 });
-      console.log(history);
+    //  console.log(history);
       res.status(200).json(history);
   } catch (error) {
       res.status(500).json({ error: "Failed to fetch history" });
@@ -258,6 +258,23 @@ app.get("/gethistory/:email", async (req, res) => {
 app.delete('/history/deleteMany', async (req, res) => {
   const { date } = req.body; // Get the date from the request body
   console.log("clicked.....");
+  console.log(date);
+
+  if(date==="delete"){
+    console.log("return");
+    
+    try{
+       const result=await History.deleteMany({});
+      return res.json({ message: 'Documents deleted', deletedCount: result.deletedCount });
+    }
+    catch(error){
+      console.error('Error deleting documents:', error);
+      return res.status(500).json({ error: 'An error occurred while deleting documents' });
+
+    }
+    
+  }
+  
 
   try {
     // Convert the date to a range for the entire day
