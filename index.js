@@ -15,7 +15,7 @@ const authenticate=require("./Mongo/Authentication.js");
 
 const corsOptions = {
  origin:"https://multilanguage-translator-mern-client.vercel.app",
-// origin:"http://localhost:3000",
+ //origin:"http://localhost:3000",
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
 };
@@ -275,6 +275,7 @@ app.delete('/history/deleteMany', async (req, res) => {
     
   }
   
+  
 
   try {
     // Convert the date to a range for the entire day
@@ -294,6 +295,28 @@ app.delete('/history/deleteMany', async (req, res) => {
   } catch (error) {
     console.error('Error deleting documents:', error);
     res.status(500).json({ error: 'An error occurred while deleting documents' });
+  }
+});
+
+
+app.delete('/history/deleteone/:_id', async (req, res) => {
+  console.log("Delete endpoint hit");
+  const { _id } = req.params;
+
+  try {
+    console.log("Received ID:", _id);
+
+    const result = await History.findByIdAndDelete(_id); // Delete the document by ID
+
+    if (result) {
+      console.log("Document deleted:", result);
+      res.json({ message: 'Document deleted successfully!' });
+    } else {
+      res.status(404).json({ error: 'Document not found.' });
+    }
+  } catch (error) {
+    console.error('Error deleting document:', error);
+    res.status(500).json({ error: 'Failed to delete the item.' });
   }
 });
 
