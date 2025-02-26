@@ -6,6 +6,11 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const player = require('play-sound')();
 const router = express.Router();
+
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+
+
 const History =require("./Mongo/HistoryModel.js");
 
 
@@ -15,7 +20,7 @@ const authenticate=require("./Mongo/Authentication.js");
 
 const corsOptions = {
  origin:"https://multilanguage-translator-mern-client.vercel.app",
-  //origin:"http://localhost:3000",
+ // origin:"http://localhost:3000",
   methods: ["GET", "POST", "DELETE", "PUT"],
   credentials: true,
 };
@@ -123,56 +128,92 @@ app.post("/signupdata", async (req, res) => {
   }
 });
 
-app.post("/logindata", async (req, res) => {
+// app.post("/logindata", async (req, res) => {
 
-  const email = req.body.email;
-  const password = req.body.password;
-  const userExist = await UserDetail.findOne({ email: email });
+//   const email = req.body.email;
+//   const password = req.body.password;
+//   const userExist = await UserDetail.findOne({ email: email });
 
-  if (userExist) {
+//   if (userExist) {
 
-    const password_cmp = await bcrypt.compare(password, userExist.password);
-    console.log(userExist.name);
-    if (password_cmp) {
-      console.log('password matched..');
-      const token = jwt.sign({ id: userExist._id, email: email, password: password,user:userExist.name }, secretkey, { expiresIn: "2h" });
+//     const password_cmp = await bcrypt.compare(password, userExist.password);
+//     console.log(userExist.name);
+//     if (password_cmp) {
+//       console.log('password matched..');
+//       const token = jwt.sign({ id: userExist._id, email: email, password: password,user:userExist.name }, secretkey, { expiresIn: "2h" });
      
 
-      const expirationDate = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
-      res.cookie('token', token, {
-        maxAge: 2 * 60 * 60 * 1000, // 2 hour in milliseconds
-        httpOnly: true, // Ensures the cookie is accessible only by the server
-        secure: true,   // Ensures the cookie is sent over HTTPS
-        sameSite: 'none', // Adjust based on your cross-site requirements
+//       const expirationDate = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours from now
+//       res.cookie('token', token, {
+//         maxAge: 2 * 60 * 60 * 1000, // 2 hour in milliseconds
+//         httpOnly: true, // Ensures the cookie is accessible only by the server
+//         secure: true,   // Ensures the cookie is sent over HTTPS
+//         sameSite: 'none', // Adjust based on your cross-site requirements
+//     });
+
+//     res.cookie('email', email, {
+//       maxAge: 2 * 60 * 60 * 1000, // 2 hours
+    
+//   });
+  
+//       return res.json({
+//         msg1: "succesfully login.."
+//       })
+
+//     }
+//     else {
+//       return res.json({
+//         msg: "invalid crediantials"
+//       })
+//     }
+
+
+//   }
+
+
+
+//   res.json({
+//     msg: "user not exist please singup.."
+//   })
+// })
+
+
+app.post("/logindata", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const userExist = await UserDetail.findOne({ email });
+
+    if (!userExist) {
+      return res.status(404).json({ msg: "User not found, please sign up." });
+    }
+
+    const password_cmp = await bcrypt.compare(password, userExist.password);
+    if (!password_cmp) {
+      return res.status(401).json({ msg: "Invalid credentials" });
+    }
+
+    console.log("Password matched..");
+
+    const token = jwt.sign(
+      { id: userExist._id, email, user: userExist.name },
+      secretkey,
+      { expiresIn: "2h" }
+    );
+
+    res.cookie("token", token, {
+      maxAge: 2 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
     });
 
-    res.cookie('email', email, {
-      maxAge: 2 * 60 * 60 * 1000, // 2 hours
-    
-  });
-  
-      return res.json({
-        msg1: "succesfully login.."
-      })
+    return res.status(200).json({ msg1: "Successfully logged in.." });
 
-    }
-    else {
-      return res.json({
-        msg: "invalid crediantials"
-      })
-    }
-
-
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ msg: "Server error, please try again." });
   }
-
-
-
-  res.json({
-    msg: "user not exist please singup.."
-  })
-})
-
-
+});
 
 
 
@@ -319,6 +360,65 @@ app.delete('/history/deleteone/:_id', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete the item.' });
   }
 });
+
+
+
+
+const genAI = new GoogleGenerativeAI("AIzaSyDhbbFeTTxa2HgToJsCArT7CWxcAwOe7Ps");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const processTextWithGemini = async (text, targetLang) => {
+    try {
+        const prompt = ` 
+        1️⃣ Correct the grammar of this text: "${text}"  
+        2️⃣ Then translate it into ${targetLang}.  
+        3️⃣ Explain when this translated text is best used.
+        4️⃣ Return the response in valid JSON format:
+        {
+          "corrected": "corrected sentence",
+          "translated": "translated sentence",
+          "when_to_use": "context or scenario for usage"
+        }
+        DO NOT include explanations or extra formatting.`;
+        
+        const result = await model.generateContent(prompt);
+        let responseText = await result.response.text();
+
+        console.log("🔍 Raw Response from Gemini:", responseText);
+
+        responseText = responseText.replace(/```json|```/g, "").trim();
+
+        // ✅ Validate before parsing
+        if (responseText.startsWith("{") && responseText.endsWith("}")) {
+            return JSON.parse(responseText);
+        } else {
+            throw new Error("Invalid JSON response from Gemini.");
+        }
+    } catch (error) {
+        console.error("❌ Gemini API Error:", error.message);
+        throw new Error("Gemini API request failed.");
+    }
+};
+
+app.post("/process-text", async (req, res) => {
+    try {
+        const { text, targetLang } = req.body;
+
+        if (!text || !targetLang) {
+            return res.status(400).json({ error: "Text and target language are required." });
+        }
+
+        console.log("Received translation request for:", text);
+        console.log("Target language:", targetLang);
+
+        const translatedText = await processTextWithGemini(text, targetLang);
+
+        res.json(translatedText); // ✅ Returns full JSON including "when_to_use"
+    } catch (error) {
+        console.error("❌ Backend Error:", error.message);
+        res.status(500).json({ error: "Failed to process text." });
+    }
+});
+
 
 
 
