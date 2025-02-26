@@ -1,4 +1,8 @@
 const jwt=require("jsonwebtoken");
+const express=require("express");
+const cookieParser = require("cookie-parser");
+const app=express();
+app.use(cookieParser());
 
 const secretkey = "jaykitmaurya19072002";
 const verify=(req,res,next)=>{
