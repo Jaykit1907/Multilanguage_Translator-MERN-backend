@@ -204,7 +204,7 @@ app.post("/logindata", async (req, res) => {
       maxAge: 2 * 60 * 60 * 1000,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
     });
 
     return res.status(200).json({ msg1: "Successfully logged in.." });
