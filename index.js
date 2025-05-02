@@ -203,8 +203,11 @@ app.post("/logindata", async (req, res) => {
     res.cookie("token", token, {
       maxAge: 2 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      // secure: process.env.NODE_ENV === "production",
+      // sameSite: "strict",
+      sameSite: "none", 
+secure: true // must be true if sameSite is "none"
+
     });
 
     return res.status(200).json({ msg1: "Successfully logged in.." });
